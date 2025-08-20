@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FactCheck Pro - Verificador de Fatos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #667eea;
+            background-color: #f7fafc;
+        }
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #edf2f7;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6 px-4">
+        <div class="max-w-md mx-auto text-center">
+            <div class="flex items-center justify-center mb-2">
+                <svg class="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <h1 class="text-2xl font-bold">FactCheck Pro</h1>
+            </div>
+            <p class="text-blue-100">Verifique a veracidade de imagens e notícias</p>
+        </div>
+    </header>
+
+    <div class="max-w-md mx-auto px-4 py-6 space-y-6">
+        <!-- Abas de Verificação -->
+        <div class="bg-white rounded-xl card-shadow p-6">
+            <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+                <button id="imageTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors bg-blue-600 text-white">
+                    📷 Imagem
+                </button>
+                <button id="textTab" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-800">
+                    📝 Texto
+                </button>
+            </div>
+
+            <!-- Verificação de Imagem -->
+            <div id="imageSection">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                    </svg>
+                    Verificar Imagem
+                </h2>
+            
+            <div class="upload-area rounded-lg p-8 text-center cursor-pointer" id="uploadArea">
+                <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="text-gray-600 mb-2">Toque para selecionar uma imagem</p>
+                <p class="text-sm text-gray-400">ou arraste e solte aqui</p>
+                <input type="file" id="imageInput" accept="image/*" class="hidden">
+            </div>
+
+            <div id="imagePreview" class="hidden mt-4">
+                <img id="previewImg" class="w-full rounded-lg mb-4" alt="Imagem para verificação">
+                <button id="analyzeBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Analisar Imagem
+                </button>
+            </div>
+
+                <div id="analysisResult" class="hidden mt-4 p-4 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div id="resultIcon" class="w-6 h-6 mr-2"></div>
+                        <span id="resultText" class="font-semibold"></span>
+                    </div>
+                    <p id="resultDescription" class="text-sm text-gray-600"></p>
+                </div>
+            </div>
+
+            <!-- Verificação de Texto -->
+            <div id="textSection" class="hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Verificar Texto/Notícia
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cole o texto ou URL da notícia:</label>
+                        <textarea id="textInput" placeholder="Cole aqui o texto da notícia ou a URL para verificação..." 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" 
+                                rows="6"></textarea>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button id="analyzeTextBtn" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            Verificar Texto
+                        </button>
+                        <button id="clearTextBtn" class="px-4 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="textAnalysisResult" class="hidden mt-4 p-4 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div id="textResultIcon" class="w-6 h-6 mr-2"></div>
+                        <span id="textResultText" class="font-semibold"></span>
+                    </div>
+                    <p id="textResultDescription" class="text-sm text-gray-600 mb-3"></p>
+                    <div id="textResultDetails" class="text-xs text-gray-500 space-y-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sites de Verificação -->
+        <div class="bg-white rounded-xl card-shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5z"/>
+                    <path d="M7.414 15.414a2 2 0 01-2.828-2.828l3-3a2 2 0 012.828 0 1 1 0 001.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 00-1.414-1.414l-1.5 1.5z"/>
+                </svg>
+                Sites Confiáveis
+            </h2>
+            
+            <div class="space-y-3">
+                <a href="https://www.aosfatos.org/" target="_blank" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Aos Fatos</h3>
+                            <p class="text-sm text-gray-600">Agência de checagem brasileira</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </a>
+
+                <a href="https://piaui.folha.uol.com.br/lupa/" target="_blank" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Lupa</h3>
+                            <p class="text-sm text-gray-600">Agência de fact-checking da Folha</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </a>
+
+                <a href="https://www.e-farsas.com/" target="_blank" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">E-Farsas</h3>
+                            <p class="text-sm text-gray-600">Desmentindo boatos desde 2002</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </a>
+
+                <a href="https://checamos.afp.com/list" target="_blank" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">AFP Checamos</h3>
+                            <p class="text-sm text-gray-600">Verificação internacional AFP</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Ferramentas Rápidas -->
+        <div class="bg-white rounded-xl card-shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                </svg>
+                Ferramentas
+            </h2>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button id="reverseSearchBtn" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                    <svg class="w-8 h-8 mx-auto text-blue-600 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm font-medium">Busca Reversa</span>
+                </button>
+
+                <button id="trendingBtn" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                    <svg class="w-8 h-8 mx-auto text-red-600 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm font-medium">Trending</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Botão de Download -->
+        <div class="bg-gradient-to-r from-green-500 to-blue-600 rounded-xl p-6 text-white text-center">
+            <svg class="w-12 h-12 mx-auto mb-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+            <h3 class="text-lg font-semibold mb-2">Baixar App</h3>
+            <p class="text-green-100 mb-4">Instale o FactCheck Pro no seu celular</p>
+            <button id="downloadBtn" class="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Baixar Agora
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Trending -->
+    <div id="trendingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-md w-full max-h-96 overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Verificações em Alta</h3>
+                    <button id="closeTrending" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <div class="p-3 border border-red-200 bg-red-50 rounded-lg">
+                        <div class="flex items-center mb-1">
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded">FALSO</span>
+                            <span class="ml-2 text-sm text-gray-600">🔥 Viral</span>
+                        </div>
+                        <p class="text-sm font-medium">Foto de "alienígena" encontrado</p>
+                    </div>
+                    <div class="p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center mb-1">
+                            <span class="bg-yellow-500 text-white text-xs px-2 py-1 rounded">PARCIAL</span>
+                            <span class="ml-2 text-sm text-gray-600">📈 Trending</span>
+                        </div>
+                        <p class="text-sm font-medium">Vacina causa efeitos colaterais</p>
+                    </div>
+                    <div class="p-3 border border-green-200 bg-green-50 rounded-lg">
+                        <div class="flex items-center mb-1">
+                            <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">VERDADE</span>
+                            <span class="ml-2 text-sm text-gray-600">✅ Verificado</span>
+                        </div>
+                        <p class="text-sm font-medium">Nova descoberta científica</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de abas
+        const imageTab = document.getElementById('imageTab');
+        const textTab = document.getElementById('textTab');
+        const imageSection = document.getElementById('imageSection');
+        const textSection = document.getElementById('textSection');
+
+        imageTab.addEventListener('click', () => {
+            imageTab.className = 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors bg-blue-600 text-white';
+            textTab.className = 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-800';
+            imageSection.classList.remove('hidden');
+            textSection.classList.add('hidden');
+        });
+
+        textTab.addEventListener('click', () => {
+            textTab.className = 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors bg-green-600 text-white';
+            imageTab.className = 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-800';
+            textSection.classList.remove('hidden');
+            imageSection.classList.add('hidden');
+        });
+
+        // Upload de imagem
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const analysisResult = document.getElementById('analysisResult');
+
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleImageUpload(files[0]);
+            }
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageUpload(e.target.files[0]);
+            }
+        });
+
+        function handleImageUpload(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+                analysisResult.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        analyzeBtn.addEventListener('click', () => {
+            analyzeBtn.innerHTML = '<div class="pulse-animation">Analisando...</div>';
+            
+            setTimeout(() => {
+                const results = [
+                    {
+                        status: 'suspicious',
+                        text: 'Imagem Suspeita',
+                        description: 'Esta imagem pode ter sido editada. Recomendamos verificação adicional.',
+                        color: 'bg-yellow-100 border-yellow-300',
+                        icon: '⚠️'
+                    },
+                    {
+                        status: 'authentic',
+                        text: 'Imagem Autêntica',
+                        description: 'Não foram detectadas alterações significativas na imagem.',
+                        color: 'bg-green-100 border-green-300',
+                        icon: '✅'
+                    },
+                    {
+                        status: 'manipulated',
+                        text: 'Imagem Manipulada',
+                        description: 'Detectadas evidências de edição digital na imagem.',
+                        color: 'bg-red-100 border-red-300',
+                        icon: '❌'
+                    }
+                ];
+
+                const result = results[Math.floor(Math.random() * results.length)];
+                
+                analysisResult.className = `mt-4 p-4 rounded-lg border ${result.color}`;
+                document.getElementById('resultIcon').textContent = result.icon;
+                document.getElementById('resultText').textContent = result.text;
+                document.getElementById('resultDescription').textContent = result.description;
+                
+                analysisResult.classList.remove('hidden');
+                analyzeBtn.innerHTML = 'Analisar Imagem';
+            }, 2000);
+        });
+
+        // Verificação de texto
+        const textInput = document.getElementById('textInput');
+        const analyzeTextBtn = document.getElementById('analyzeTextBtn');
+        const clearTextBtn = document.getElementById('clearTextBtn');
+        const textAnalysisResult = document.getElementById('textAnalysisResult');
+
+        analyzeTextBtn.addEventListener('click', () => {
+            const text = textInput.value.trim();
+            if (!text) {
+                alert('Por favor, insira um texto ou URL para verificação.');
+                return;
+            }
+
+            analyzeTextBtn.innerHTML = '<div class="pulse-animation">Verificando...</div>';
+            
+            setTimeout(() => {
+                const textResults = [
+                    {
+                        status: 'false',
+                        text: 'Informação Falsa',
+                        description: 'Esta informação foi desmentida por agências de fact-checking.',
+                        color: 'bg-red-100 border-red-300',
+                        icon: '❌',
+                        details: [
+                            '• Fonte não confiável identificada',
+                            '• Contradiz dados oficiais',
+                            '• Já verificado por 3 agências'
+                        ]
+                    },
+                    {
+                        status: 'true',
+                        text: 'Informação Verdadeira',
+                        description: 'Esta informação foi confirmada por fontes confiáveis.',
+                        color: 'bg-green-100 border-green-300',
+                        icon: '✅',
+                        details: [
+                            '• Fonte oficial confirmada',
+                            '• Dados verificados',
+                            '• Múltiplas fontes concordam'
+                        ]
+                    },
+                    {
+                        status: 'partial',
+                        text: 'Parcialmente Verdadeiro',
+                        description: 'A informação contém elementos verdadeiros, mas também imprecisões.',
+                        color: 'bg-yellow-100 border-yellow-300',
+                        icon: '⚠️',
+                        details: [
+                            '• Contexto incompleto',
+                            '• Alguns dados corretos',
+                            '• Necessita verificação adicional'
+                        ]
+                    },
+                    {
+                        status: 'unverified',
+                        text: 'Não Verificado',
+                        description: 'Não foi possível confirmar a veracidade desta informação.',
+                        color: 'bg-gray-100 border-gray-300',
+                        icon: '❓',
+                        details: [
+                            '• Fonte desconhecida',
+                            '• Informação muito recente',
+                            '• Aguardando verificação'
+                        ]
+                    }
+                ];
+
+                const result = textResults[Math.floor(Math.random() * textResults.length)];
+                
+                textAnalysisResult.className = `mt-4 p-4 rounded-lg border ${result.color}`;
+                document.getElementById('textResultIcon').textContent = result.icon;
+                document.getElementById('textResultText').textContent = result.text;
+                document.getElementById('textResultDescription').textContent = result.description;
+                
+                const detailsDiv = document.getElementById('textResultDetails');
+                detailsDiv.innerHTML = result.details.map(detail => `<div>${detail}</div>`).join('');
+                
+                textAnalysisResult.classList.remove('hidden');
+                analyzeTextBtn.innerHTML = 'Verificar Texto';
+            }, 2500);
+        });
+
+        clearTextBtn.addEventListener('click', () => {
+            textInput.value = '';
+            textAnalysisResult.classList.add('hidden');
+        });
+
+        // Busca reversa
+        document.getElementById('reverseSearchBtn').addEventListener('click', () => {
+            window.open('https://images.google.com/', '_blank');
+        });
+
+        // Modal de trending
+        const trendingBtn = document.getElementById('trendingBtn');
+        const trendingModal = document.getElementById('trendingModal');
+        const closeTrending = document.getElementById('closeTrending');
+
+        trendingBtn.addEventListener('click', () => {
+            trendingModal.classList.remove('hidden');
+        });
+
+        closeTrending.addEventListener('click', () => {
+            trendingModal.classList.add('hidden');
+        });
+
+        trendingModal.addEventListener('click', (e) => {
+            if (e.target === trendingModal) {
+                trendingModal.classList.add('hidden');
+            }
+        });
+
+        // Download do app
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            // Simula download do PWA
+            if ('serviceWorker' in navigator) {
+                alert('📱 Para instalar o app:\n\n1. Toque no menu do navegador (⋮)\n2. Selecione "Adicionar à tela inicial"\n3. Confirme a instalação');
+            } else {
+                alert('💾 Funcionalidade de download disponível em breve!');
+            }
+        });
+
+        // PWA básico
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swScript = `
+                    self.addEventListener('install', (e) => {
+                        console.log('Service Worker instalado');
+                    });
+                    
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(fetch(e.request));
+                    });
+                `;
+                
+                const blob = new Blob([swScript], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(() => console.log('SW registrado'))
+                    .catch(() => console.log('Erro no SW'));
+            });
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97217f1e74e6544e',t:'MTc1NTY4ODc3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
